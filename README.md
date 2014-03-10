@@ -1,6 +1,7 @@
 hadoop_study
 ============
 
+<<<<<<< HEAD
 Version : 1.0.0
 Date : 2014.03.07
    * Add MR UT and Pig UT
@@ -40,3 +41,6 @@ Pig UT
 
 
 
+=======
+hadoop related examples
+>>>>>>> 76211a9c33284ad1715c03107f452ad9a51a251c
