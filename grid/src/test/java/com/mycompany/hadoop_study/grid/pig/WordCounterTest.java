@@ -11,7 +11,7 @@ import java.io.IOException;
  * Created by tianzy on 3/5/14.
  */
 public class WordCounterTest {
-    private static String PIG_SCRIPT = "grid/src/main/scripts/pig/WordCounter.pig";
+    private static String PIG_SCRIPT = "src/main/scripts/pig/WordCounter.pig";
 
     private String gen(char del, String... fields) {
         String line = null;
@@ -42,7 +42,7 @@ public class WordCounterTest {
                 "this is a simple test case",
         };
         String[] output = {
-                gen(',', "aq", "2"),
+                gen(',', "a", "2"),
                 gen(',', "case", "2"),
                 gen(',', "is", "2"),
                 gen(',', "simple", "2"),

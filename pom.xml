@@ -14,13 +14,20 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <hadooo_study.core.version>${project.version}</hadooo_study.core.version>
+        <apache.hadoop.version>2.0.0-cdh4.2.0 </apache.hadoop.version>
+        <apache.pig.version>0.10.0-cdh4.2.0 </apache.pig.version>
 
         <maven-surefire-plugin.version>2.14.1</maven-surefire-plugin.version>
         <mrunit.version>1.0.0</mrunit.version>
+<!--
         <hadoopcoretree.version>0.23.7.1.1305071357</hadoopcoretree.version>
         <pig.version>0.10.1.3.1212060913</pig.version>
         <pigunit.version>1.0.2</pigunit.version>
         <hadoop_mvn_client.version>0.23.6.0.1301071353</hadoop_mvn_client.version>
+-->
+
+
+        <antlr-runtime.version>3.5.2</antlr-runtime.version>
         <commons-httpclient.version>3.1</commons-httpclient.version>
         <commons-lang3.version>3.1</commons-lang3.version>
         <log4j.version>1.2.17</log4j.version>
@@ -28,7 +35,7 @@
         <commons-lang.version>2.6</commons-lang.version>
         <commons-codec.version>1.4</commons-codec.version>
         <commons-cli.version>1.0</commons-cli.version>
-        <avro.version>1.7.3</avro.version>
+        <avro.version>1.7.6</avro.version>
         <testng.version>6.8</testng.version>
         <junit.version>4.10</junit.version>
         <guava.version>11.0.2</guava.version>
@@ -37,6 +44,13 @@
         <jline.version>0.9.0</jline.version>
         <joda-time.version>2.3</joda-time.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>cloudera</id>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+    </repositories>
 
     <modules>
         <module>core</module>

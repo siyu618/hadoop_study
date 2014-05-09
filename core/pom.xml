@@ -41,26 +41,44 @@
 
     </properties>
 
+
     <dependencies>
         <dependency>
-            <groupId>yahoo.yinst.hadoopcoretree</groupId>
+            <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
-            <version>${hadoopcoretree.version}</version>
+            <version>${apache.hadoop.version}</version>
         </dependency>
         <dependency>
-            <groupId>yahoo.yinst.hadoopcoretree</groupId>
+            <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>${hadoopcoretree.version}</version>
+            <version>${apache.hadoop.version}</version>
         </dependency>
         <dependency>
-            <groupId>yahoo.yinst.hadoopcoretree</groupId>
+            <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-core</artifactId>
-            <version>${hadoopcoretree.version}</version>
+            <version>${apache.hadoop.version}</version>
         </dependency>
         <dependency>
-            <groupId>yahoo.yinst.hadoopcoretree</groupId>
+            <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-auth</artifactId>
-            <version>${hadoopcoretree.version}</version>
+            <version>${apache.hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${apache.hadoop.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.pig</groupId>
+            <artifactId>pig</artifactId>
+            <version>${apache.pig.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pig</groupId>
+            <artifactId>pigunit</artifactId>
+            <version>${apache.pig.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -142,22 +160,7 @@
             <version>${guava.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>yahoo.yinst.hadoop_mvn_client</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>${hadoop_mvn_client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>yahoo.yinst.pig</groupId>
-            <artifactId>pig-h23</artifactId>
-            <version>${pig.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>yahoo.yinst.pigunit</groupId>
-            <artifactId>pigunit</artifactId>
-            <version>${pigunit.version}</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
