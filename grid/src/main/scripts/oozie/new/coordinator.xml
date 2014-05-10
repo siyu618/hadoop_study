@@ -1,0 +1,60 @@
+<coordinator-app name="${coordinatorName}" frequency="${freq}" start="${start}" end="${end}" timezone="UTC"
+                 xmlns="uri:oozie:coordinator:0.4">
+    <controls>
+    	<concurrency>1</concurrency>
+    </controls>
+    <datasets>
+        <dataset name="output" frequency="${freq}" initial-instance="${ds_start}" timezone="UTC">
+            <uri-template>${output}/${YEAR}${MONTH}${DAY}${HOUR}${MINUTE}</uri-template>
+            <done-flag>/</done-flag>
+        </dataset>
+        <dataset name="tmpOutput" frequency="${freq}" initial-instance="${ds_start}" timezone="UTC">
+            <uri-template>${tmpOutput}/${YEAR}${MONTH}${DAY}${HOUR}${MINUTE}</uri-template>
+            <done-flag>/</done-flag>
+        </dataset>
+        <dataset name="date" frequency="${freq}" initial-instance="${ds_start}" timezone="UTC">
+            <uri-template>${YEAR}${MONTH}${DAY}</uri-template>
+        </dataset>
+    </datasets>
+
+    <output-events>
+        <data-out name="output" dataset="output">
+            <instance>${coord:current(0)}</instance>
+        </data-out>
+        <data-out name="tmpOutput" dataset="tmpOutput">
+            <instance>${coord:current(0)}</instance>
+        </data-out>
+        <data-out name="date" dataset="date">
+            <instance>${coord:current(0)}</instance>
+        </data-out>
+    </output-events>
+
+
+    <action>
+        <workflow>
+            <app-path>${appDir}</app-path>
+            <configuration>
+                <property>
+                    <name>outputBase</name>
+                    <value>${coord:dataOut('output')}</value>
+                </property>
+                <property>
+                                    <name>tmpOutputBase</name>
+                                                        <value>${coord:dataOut('tmpOutput')}</value>
+                                                                        </property>
+                <property>
+                    <name>output</name>
+                    <value>${coord:dataOut('output')}/${outputSuffix}</value>
+                </property>
+                <property>
+                    <name>tmpOutput</name>
+                    <value>${coord:dataOut('tmpOutput')}/${outputSuffix}</value>
+                </property>
+                <property>
+                    <name>date</name>
+                    <value>${coord:dataOut('date')}</value>
+                </property>
+            </configuration>
+        </workflow>
+    </action>
+</coordinator-app>

@@ -1,0 +1,555 @@
+<workflow-app xmlns="uri:oozie:workflow:0.4" name="datax_grid">
+
+	<start to="getFileList" />
+
+	<action name="getFileList">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<job-xml>action-default.xml</job-xml>
+			<configuration>
+				<property>
+					<name>mapreduce.job.queuename</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.hdfs-servers</name>
+					<value>hdfs://dilithiumred-nn1.red.ygrid.yahoo.com:8020,hdfs://bassniumred-nn1.red.ygrid.yahoo.com:8020</value>
+				</property>
+			</configuration>
+			<main-class>com.yahoo.datax.grid.audience.mr.FilePickUp</main-class>
+			<arg>${metaDropbox}</arg>
+			<arg>${urnType}</arg>
+			<arg>${dp}</arg>
+			<arg>${distCache}</arg>
+			<arg>${metaProcessed}</arg>
+			<arg>${panelName}</arg>
+			<arg>${panelType}</arg>
+			<capture-output />
+		</java>
+		<ok to="checkfilecount" />
+		<error to="fail" />
+	</action>
+
+	<decision name="checkfilecount">
+		<switch>
+			<case to="end">
+				${wf:actionData('getFileList')['filecount'] eq 0}
+			</case>
+			<default to="idMapping" />
+		</switch>
+	</decision>
+	<action name="idMapping">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${tmpOutput}" />
+			</prepare>
+			<job-xml>action-default.xml</job-xml>
+			<configuration>
+				<property>
+					<name>datax.date</name>
+					<value>${date}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.queuename</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.map.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${tmpOutput}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.output.lazyoutputformat.outputformat</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
+					</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.hdfs-servers</name>
+					<value>hdfs://dilithiumred-nn1.red.ygrid.yahoo.com:8020</value>
+				</property>
+				<property>
+					<name>dlx.grid.log.max.bad.urn.num</name>
+					<value>20</value>
+				</property>
+				<property>
+					<name>dlx.grid.log.max.bad.record.num</name>
+					<value>20</value>
+				</property>
+				<property>
+			    	<name>dlx.grid.log.max.bad.seg.num</name>
+					<value>20</value>
+				</property>
+				<property>
+					<name>dlx.grid.log.max.bad.att.num</name>
+					<value>20</value>
+				</property>
+				<!-- <property> <name>oozie.launcher.dlx.grid.cache.file</name> <value>dlx.grid.cache.file</value> 
+					<description>should be prefixed with oozie.launcher so that it could be used 
+					in job launched by the java action</description> </property> -->
+				<property>
+					<name>dlx.grid.cache.file</name>
+					<value>dlx.grid.cache.file</value>
+					<description>The job will get the distributed cache file from this
+						setting:
+						make is easy for the test. Also Note that, this setting
+						could be got
+						in the java action, it could be got in the job
+						launched by the
+						java action
+						if the job
+						inherit the configuration
+						from
+						"oozie.action.conf.xml".
+					</description>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+                <property>
+                    <name>mapred.child.env</name>
+                    <value>ROOT=${keydbRoot}</value>
+                    <description>this keydb root is used for decryption</description>
+                </property>
+			</configuration>
+			<main-class>com.yahoo.datax.grid.audience.mr.StatsAndValidation
+			</main-class>
+			<file>${wf:actionData('getFileList')['DataxMetaFile']}#dlx.grid.cache.file
+			</file>
+		</java>
+		<ok to="aggForking" />
+		<error to="fail" />
+	</action>
+
+	<fork name="aggForking">
+		<path start="checkIfOutputExists" />
+		<path start="checkIfAggStatExists" />
+		<path start="checkIfAggLogExists" />
+		<path start="checkIfAggPermErrsLogExists" />
+	</fork>
+	
+    <decision name="checkIfOutputExists">
+        <switch>
+            <case to="aggregateOutput">
+                ${fs:exists(concat(tmpOutput,'/tmpsls'))}
+            </case>
+            <default to="joining"/>
+        </switch>
+    </decision>
+    <action name="aggregateOutput">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <streaming>
+                <mapper>cat</mapper>
+                <reducer>cat</reducer>
+            </streaming>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>${tmpOutput}/tmpsls/*</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>${tmpOutput}/sls</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.acl-view-job</name>
+                    <value>${hadoopACLViewJob}</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.acl-modify-job</name>
+                    <value>${hadoopACLModifyJob}</value>
+                </property>
+                <property>
+                    <name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+                    <value>${oozieACLModifyJob}</value>
+                </property>
+                <property>
+                    <name>oozie.launcher.mapreduce.job.acl-view-job</name>
+                    <value>${oozieACLViewJob}</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="joining"/>
+        <error to="fail"/>
+    </action>
+
+	<decision name="checkIfAggStatExists">
+		<switch>
+			<case to="aggregateStat">
+				${fs:exists(concat(tmpOutput,'/stats/raw'))}
+			</case>
+			<default to="joining" />
+		</switch>
+	</decision>
+	<action name="aggregateStat">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>com.yahoo.datax.grid.audience.aggregation.DxStatMapper
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.job.reduce.class</name>
+					<value>com.yahoo.datax.grid.audience.aggregation.DxStatReducer
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>${tmpOutput}/stats/raw/*</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${tmpOutput}/stats/agg</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="joining" />
+		<error to="fail" />
+	</action>
+
+	<decision name="checkIfAggLogExists">
+		<switch>
+			<case to="aggregateLog">
+				${fs:exists(concat(tmpOutput,'/logs/raw'))}
+			</case>
+			<default to="joining" />
+		</switch>
+	</decision>
+	<action name="aggregateLog">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.queuename</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>com.yahoo.datax.grid.audience.aggregation.DxLogMapper
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.job.reduce.class</name>
+					<value>com.yahoo.datax.grid.audience.aggregation.DxLogReducer
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.map.output.key.class</name>
+					<value>com.yahoo.datax.grid.audience.aggregation.keys.DxStatLogCompositeKey
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.map.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>${tmpOutput}/logs/raw/*</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${tmpOutput}/logs/agg/</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="joining" />
+		<error to="fail" />
+	</action>
+
+	<decision name="checkIfAggPermErrsLogExists">
+		<switch>
+			<case to="aggregatePermErrsLog">
+				${fs:exists(concat(tmpOutput,'/permErrLogs/raw'))}
+			</case>
+			<default to="joining" />
+		</switch>
+	</decision>
+	<action name="aggregatePermErrsLog">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.queuename</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>com.yahoo.datax.grid.audience.aggregation.DxLogMapper
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.job.reduce.class</name>
+					<value>com.yahoo.datax.grid.audience.aggregation.DxLogReducer
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.map.output.key.class</name>
+					<value>com.yahoo.datax.grid.audience.aggregation.keys.DxStatLogCompositeKey
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.map.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>${tmpOutput}/permErrLogs/raw/*</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${tmpOutput}/permErrLogs/agg/</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="joining" />
+		<error to="fail" />
+	</action>
+
+	<join name="joining" to="touchAgg" />
+
+	<action name="touchAgg">
+		<fs>
+			<mkdir path="${nameNode}/${outputBase}" />
+			<chmod path="${nameNode}/${outputBase}" permissions="770" dir-files="true" />
+			<mkdir path="${nameNode}/${metaProcessed}/${date}" />
+			<delete path="${nameNode}/${tmpOutput}/decrypt/tmpsls" />
+			<delete path="${nameNode}/${tmpOutput}/decrypt/stats/raw" />
+			<delete path="${nameNode}/${tmpOutput}/decrypt/logs/raw" />
+			<delete path="${nameNode}/${tmpOutput}/decrypt/permErrLogs/raw" />
+			<delete path="${nameNode}/${tmpOutput}/panel/tmpsls" />
+			<delete path="${nameNode}/${tmpOutput}/panel/stats/raw" />
+			<delete path="${nameNode}/${tmpOutput}/panel/logs/raw" />
+			<delete path="${nameNode}/${tmpOutput}/panel/permErrLogs/raw" />
+		</fs>
+		<ok to="moveTmpOutput" />
+		<error to="fail" />
+	</action>
+	<action name="moveTmpOutput">
+		<pig>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.queuename</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>*</value>
+				</property>
+			</configuration>
+			<script>${appDir}/pig/move.pig</script>
+			<param>dcpath=${wf:actionData('getFileList')['DataxMetaFile']}
+			</param>
+			<param>tmpoutput=${tmpOutput}</param>
+			<param>output=${output}</param>
+		</pig>
+		<ok to="moveMetaFiles" />
+		<error to="fail" />
+	</action>
+
+	<action name="moveMetaFiles">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<job-xml>action-default.xml</job-xml>
+			<configuration>
+				<property>
+					<name>fs.permissions.umask-mode</name>
+					<value>007</value>
+				</property>
+				<property>
+					<name>mapreduce.job.queuename</name>
+					<value>${queueName}</value>
+				</property>
+			</configuration>
+			<main-class>com.yahoo.datax.grid.audience.mr.MoveMetaFiles
+			</main-class>
+			<arg>${metaProcessed}/${date}</arg>
+			<file>${wf:actionData('getFileList')['DataxMetaFile']}#dlx.grid.cache.file
+			</file>
+		</java>
+		<ok to="dumpDistributedCache" />
+		<error to="fail" />
+	</action>
+	<action name="dumpDistributedCache">
+		<fs>
+			<delete path="${nameNode}/${wf:actionData('getFileList')['DataxMetaFile']}" />
+			<delete path="${nameNode}/${tmpOutputBase}" />
+		</fs>
+		<ok to="end" />
+		<error to="fail" />
+	</action>
+	<kill name="fail">
+		<message>Workflow failed failed, error
+			message[${wf:errorMessage(wf:lastErrorNode())}]
+		</message>
+	</kill>
+	<end name="end" />
+</workflow-app>

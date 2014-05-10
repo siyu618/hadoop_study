@@ -1,0 +1,1939 @@
+<workflow-app xmlns="uri:oozie:workflow:0.1" name="bt_dashboard">
+	<start to="all_decision" />
+
+	<decision name="all_decision">
+		<switch>
+			<case to="apt_format_convert_decision">${fs:exists( concat(doneFlagOutput, "/all_b.done")
+				) ==
+				false}
+			</case>
+			<default to="end" />
+		</switch>
+	</decision>
+
+	<!-- add workflow to convert apt clicks & serves data to ULTRecordJT format -->
+
+	<decision name="apt_format_convert_decision">
+        <switch>
+            <case to="apt_format_convert_start_decision">${fs:exists( concat(doneFlagOutput, "/apexruby_b.done")
+                ) ==
+                false}
+            </case>
+            <default to="abf_decision" />
+        </switch>
+	</decision>
+
+	<!-- start of apt_format_convert workflow -->
+    <decision name="apt_format_convert_start_decision">
+        <switch>
+            <case to="apt_format_convert_clicks_mapreduce">true</case>
+            <default to="apt_format_convert_clicks_mapreduce" />
+        </switch>
+    </decision>
+
+    <action name="apt_format_convert_clicks_mapreduce">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${aptClicksInputWorking}" />
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+                <property>
+                    <name>mapred.mapper.class</name>
+                    <value>com.yahoo.grid.daq.transformation.TransformationMapper
+                    </value>
+                </property>
+                <property>
+                    <name>mapred.input.dir</name>
+                    <value>${aptClicksInput}</value>
+                </property>
+                <property>
+                    <name>mapred.input.format.class</name>
+                    <value>org.apache.hadoop.mapred.TextInputFormat</value>
+                </property>
+                <property>
+                    <name>mapred.output.dir</name>
+                    <value>${aptClicksInputWorking}</value>
+                </property>
+                <property>
+                    <name>mapred.output.format.class</name>
+                    <value>org.apache.hadoop.mapred.SequenceFileOutputFormat</value>
+                </property>
+                 <property>
+                    <name>mapred.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                    <description>The full classname of the output key.</description>
+                </property>
+                <property>
+                    <name>mapred.output.value.class</name>
+                    <value>com.yahoo.yst.sds.ULT.ULTRecordJT</value>
+                    <description>The full classname of the output value.</description>
+                </property>
+                <property>
+                    <name>schema.file.pattern</name>
+                    <value>${aptClicksSchemaFilePattern}</value>
+                </property>
+                <property>
+                    <name>ouput.key.fileds</name>
+                    <value>fullcookie,receive_time</value>
+                </property>
+                <property>
+                    <name>output.value.add.field.names</name>
+                    <value>datestamp</value>
+                </property>
+                <property>
+                    <name>output.value.add.field.values</name>
+                    <value>daily</value>
+                </property>
+                <property>
+                    <name>mapred.job.map.memory.mb</name>
+                    <value>1024</value>
+                </property>
+                <property>
+                    <name>mapred.reduce.tasks</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapred.map.tasks.speculative.execution</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.acl-view-job</name>
+                    <value>${hadoopACLViewJob}</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.acl-modify-job</name>
+                    <value>${hadoopACLModifyJob}</value>
+                </property>
+                <property>
+                    <name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+                    <value>${oozieACLViewJob}</value>
+                </property>
+                <property>
+                    <name>oozie.launcher.mapreduce.job.acl-view-job</name>
+                    <value>${oozieACLModifyJob}</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="apt_format_convert_serves_mapreduce" />
+        <error to="kill" />
+    </action>
+
+    <action name="apt_format_convert_serves_mapreduce">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${aptServesInputWorking}" />
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+                <property>
+                    <name>mapred.mapper.class</name>
+                    <value>com.yahoo.grid.daq.transformation.TransformationMapper
+                    </value>
+                </property>
+                <property>
+                    <name>mapred.input.dir</name>
+                    <value>${aptServesInput}</value>
+                </property>
+                <property>
+                    <name>mapred.input.format.class</name>
+                    <value>org.apache.hadoop.mapred.TextInputFormat</value>
+                </property>
+                <property>
+                    <name>mapred.output.dir</name>
+                    <value>${aptServesInputWorking}</value>
+                </property>
+                <property>
+                    <name>mapred.output.format.class</name>
+                    <value>org.apache.hadoop.mapred.SequenceFileOutputFormat</value>
+                </property>
+                 <property>
+                    <name>mapred.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                    <description>The full classname of the output key.</description>
+                </property>
+                <property>
+                    <name>mapred.output.value.class</name>
+                    <value>com.yahoo.yst.sds.ULT.ULTRecordJT</value>
+                    <description>The full classname of the output value.</description>
+                </property>
+                <property>
+                    <name>schema.file.pattern</name>
+                    <value>${aptServesSchemaFilePattern}</value>
+                </property>
+                <property>
+                    <name>ouput.key.fileds</name>
+                    <value>fullcookie,receive_time</value>
+                </property>
+                <property>
+                    <name>output.value.add.field.names</name>
+                    <value>datestamp</value>
+                </property>
+                <property>
+                    <name>output.value.add.field.values</name>
+                    <value>daily</value>
+                </property>
+                <property>
+                    <name>mapred.job.map.memory.mb</name>
+                    <value>1024</value>
+                </property>
+                <property>
+                    <name>mapred.reduce.tasks</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapred.map.tasks.speculative.execution</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.acl-view-job</name>
+                    <value>${hadoopACLViewJob}</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.acl-modify-job</name>
+                    <value>${hadoopACLModifyJob}</value>
+                </property>
+                <property>
+                    <name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+                    <value>${oozieACLViewJob}</value>
+                </property>
+                <property>
+                    <name>oozie.launcher.mapreduce.job.acl-view-job</name>
+                    <value>${oozieACLModifyJob}</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="post_apt_format_convert_fs" />
+        <error to="kill" />
+    </action>
+
+	<action name="post_apt_format_convert_fs">
+        <fs>
+            <chmod path="${aptClicksInputWorking}" permissions="755" dir-files="true" />
+            <chmod path="${aptServesInputWorking}" permissions="755" dir-files="true" />
+        </fs>
+        <ok to="abf_decision" />
+        <error to="kill" />
+    </action>
+
+	<!-- the following are six workflows -->
+
+	<decision name="abf_decision">
+		<switch>
+			<case to="abf_start_decision">${fs:exists( concat(doneFlagOutput, "/abf1ruby_b.done")
+				) == false}
+			</case>
+			<default to="apt_abf_decision" />
+		</switch>
+	</decision>
+
+	<!-- start of abf workflow -->
+	<decision name="abf_start_decision">
+		<switch>
+			<case to="abf_triplet_generator_mapreduce">true</case>
+			<default to="abf_triplet_generator_mapreduce" />
+		</switch>
+	</decision>
+	<action name="abf_triplet_generator_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${abfOutput}/triplets" />
+			</prepare>
+			<configuration>
+				<!-- job related properties -->
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.triplet.ACTAOStatsMapper
+					</value>
+				</property>
+				<property>
+					<name>mapred.combiner.class</name>
+					<value>com.yahoo.miners.btmp.common.stats.mapred.StatsBaseCombiner
+					</value>
+					<description>The full class name of the combiner.</description>
+				</property>
+				<property>
+					<name>mapred.partitioner.class</name>
+					<value>com.yahoo.miners.btmp.common.utils.HashDistributorPartitioner
+					</value>
+					<description>The full class name of the partitioner class.
+					</description>
+				</property>
+				<property>
+					<name>mapred.reducer.class</name>
+					<value>com.yahoo.miners.btmp.common.stats.mapred.StatsBaseReducer
+					</value>
+				</property>
+				<property>
+					<name>mapred.mapoutput.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapred.mapoutput.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${abfFeed}/${runDate}*/*/*/*/part*</value>
+				</property>
+				<property>
+					<name>mapred.input.format.class</name>
+					<value>com.yahoo.ccdi.fetl.sequence.mapred.SequenceProjectorFormat
+					</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${abfOutput}/triplets</value>
+				</property>
+				<property>
+					<name>mapred.output.format.class</name>
+					<value>org.apache.hadoop.mapred.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapred.child.java.opts</name>
+					<value>-Xmx1300m</value>
+				</property>
+				<property>
+					<name>io.sort.mb</name>
+					<value>128</value>
+				</property>
+				<property>
+					<name>io.sort.factor</name>
+					<value>40</value>
+				</property>
+				<property>
+					<name>io.file.buffer.size</name>
+					<value>131072</value>
+				</property>
+				<property>
+					<name>io.sort.record.percent</name>
+					<value>0.2</value>
+				</property>
+				<property>
+					<name>aggregator.descriptor.num</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>aggregator.descriptor.0</name>
+					<value>UserDefined,com.yahoo.miners.btmp.dashboard.triplet.TripletStatsDescriptor
+					</value>
+				</property>
+				<property>
+					<name>mapred.skip.attempts.to.start.skipping</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapred.skip.map.max.skip.records</name>
+					<value>10</value>
+				</property>
+				<property>
+					<name>mapred.map.max.attempts</name>
+					<value>12</value>
+				</property>
+				<property>
+					<name>mapred.min.split.size</name>
+					<value>1073741824</value>
+				</property>
+				<property>
+					<name>mapred.skip.out.dir</name>
+					<value>${abfOutput}/skip_out</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>10</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<!-- params passed to job -->
+				<property>
+					<name>projector.key.classname</name>
+					<value>com.yahoo.uda.fetl.WritableComparableList</value>
+				</property>
+				<property>
+					<name>projector.value.classname</name>
+					<value>com.yahoo.uda.fetl.WritableComparableList</value>
+				</property>
+				<property>
+					<name>sequence_projector.key_fields</name>
+					<value>bcookie,timestamp</value>
+				</property>
+				<property>
+					<name>sequence_projector.value_fields</name>
+					<value>timestamp,bcookie,event_type,yuid,ip,spaceid,adinfo</value>
+				</property>
+				<property>
+					<name>valid.input.datestamps</name>
+					<value>${runDate}</value>
+				</property>
+				<property>
+					<name>valid.fileds.names</name>
+					<value></value>
+					<description>comma separated</description>
+				</property>
+				<property>
+					<name>valid.fields.values</name>
+					<value></value>
+					<description>comma separated</description>
+				</property>
+				<property>
+					<name>valid.fields.values.value_separator</name>
+					<value></value>
+					<description>the separator of the value, default is "::"
+					</description>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="post_abf_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="post_abf_fs">
+		<fs>
+			<mkdir path="${doneFlagOutput}/abf1ruby_b.done" />
+            <chmod path="${doneFlagOutput}" permissions="755" dir-files="true" />
+			<chmod path="${doneFlagOutput}/abf1ruby_b.done" permissions="755"
+				dir-files="true" />
+			<chmod path="${abfOutput}" permissions="755" dir-files="true" />
+			<chmod path="${abfOutput}/triplets" permissions="755"
+				dir-files="true" />
+		</fs>
+		<ok to="apt_abf_decision" />
+		<error to="kill" />
+	</action>
+	<!-- end of abf workflow -->
+
+	<decision name="apt_abf_decision">
+		<switch>
+			<case to="apt_abf_start_decision">${fs:exists( concat(doneFlagOutput,
+				"/apexaoruby_b.done") ) == false}
+			</case>
+			<default to="apt_decision" />
+		</switch>
+	</decision>
+
+	<!-- start of apt_abf_workflow -->
+	<decision name="apt_abf_start_decision">
+		<switch>
+			<case to="apt_triplet_generator_mapreduce">true</case>
+			<default to="apt_triplet_generator_mapreduce" />
+		</switch>
+	</decision>
+	<action name="apt_triplet_generator_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${aptAbfOutput}/triplets" />
+			</prepare>
+
+			<configuration>
+				<!-- job related properties -->
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.triplet.ACTAOStatsMapper
+					</value>
+				</property>
+				<property>
+					<name>mapred.combiner.class</name>
+					<value>com.yahoo.miners.btmp.common.stats.mapred.StatsBaseCombiner
+					</value>
+					<description>The full class name of the combiner.</description>
+				</property>
+				<property>
+					<name>mapred.partitioner.class</name>
+					<value>com.yahoo.miners.btmp.common.utils.HashDistributorPartitioner
+					</value>
+					<description>The full class name of the partitioner class.
+					</description>
+				</property>
+				<property>
+					<name>mapred.reducer.class</name>
+					<value>com.yahoo.miners.btmp.common.stats.mapred.StatsBaseReducer
+					</value>
+				</property>
+				<property>
+					<name>mapred.mapoutput.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapred.mapoutput.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${aptClicksInputWorking},${aptServesInputWorking}</value>
+				</property>
+				<property>
+					<name>mapred.input.format.class</name>
+					<value>org.apache.hadoop.mapred.SequenceFileInputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${aptAbfOutput}/triplets</value>
+				</property>
+				<property>
+					<name>mapred.output.format.class</name>
+					<value>org.apache.hadoop.mapred.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapred.child.java.opts</name>
+					<value>-Xmx1300m</value>
+				</property>
+				<property>
+					<name>io.sort.mb</name>
+					<value>128</value>
+				</property>
+				<property>
+					<name>io.sort.factor</name>
+					<value>40</value>
+				</property>
+				<property>
+					<name>io.file.buffer.size</name>
+					<value>131072</value>
+				</property>
+				<property>
+					<name>io.sort.record.percent</name>
+					<value>0.2</value>
+				</property>
+				<property>
+					<name>aggregator.descriptor.num</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>aggregator.descriptor.0</name>
+					<value>UserDefined,com.yahoo.miners.btmp.dashboard.triplet.TripletStatsDescriptor
+					</value>
+				</property>
+				<property>
+					<name>mapred.skip.attempts.to.start.skipping</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapred.skip.map.max.skip.records</name>
+					<value>10</value>
+				</property>
+				<property>
+					<name>mapred.map.max.attempts</name>
+					<value>12</value>
+				</property>
+				<property>
+					<name>mapred.min.split.size</name>
+					<value>1073741824</value>
+				</property>
+				<property>
+					<name>mapred.skip.out.dir</name>
+					<value>${aptAbfOutput}/skip_out</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>10</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<!-- params passed to job -->
+				<property>
+					<name>valid.input.datestamps</name>
+					<value>${runDate}</value>
+				</property>
+				<property>
+					<name>valid.fileds.names</name>
+					<value></value>
+					<description>comma separated</description>
+				</property>
+				<property>
+					<name>valid.fields.values</name>
+					<value></value>
+					<description>comma separated</description>
+				</property>
+				<property>
+					<name>valid.fields.values.value_separator</name>
+					<value></value>
+					<description>the separator of the value, default is "::"
+					</description>
+				</property>
+				<property>
+					<name>mapred.child.env</name>
+					<value>ROOT=${KEYDB_ROOT}</value>
+					<description>ysecure.so: ycrKeyDbInit</description>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="apt_abf_triplet_combiner_mapreduce" />
+		<error to="kill" />
+	</action>
+
+	<action name="apt_abf_triplet_combiner_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${aptAbfOutput}/stats" />
+			</prepare>
+
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.triplet.TripletCombinerMapper
+					</value>
+				</property>
+				<property>
+					<name>mapred.reducer.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.triplet.TripletCombinerReducer
+					</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${aptAbfOutput}/triplets,${abfOutput}/triplets</value>
+				</property>
+				<property>
+					<name>mapred.input.format.class</name>
+					<value>org.apache.hadoop.mapred.TextInputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${aptAbfOutput}/stats</value>
+				</property>
+				<property>
+					<name>mapred.output.format.class</name>
+					<value>org.apache.hadoop.mapred.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output key.</description>
+				</property>
+				<property>
+					<name>mapred.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output value.</description>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>10</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="post_apt_abf_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="post_apt_abf_fs">
+		<fs>
+			<mkdir path="${doneFlagOutput}/apexaoruby_b.done" />
+			<chmod path="${doneFlagOutput}/apexaoruby_b.done" permissions="755"
+				dir-files="true" />
+			<chmod path="${aptAbfOutput}" permissions="755" dir-files="true" />
+			<chmod path="${aptAbfOutput}/triplets" permissions="755"
+				dir-files="true" />
+			<chmod path="${aptAbfOutput}/stats" permissions="755"
+				dir-files="true" />
+		</fs>
+		<ok to="apt_decision" />
+		<error to="kill" />
+	</action>
+	<!-- end of apt_abf_workflow -->
+
+	<decision name="apt_decision">
+		<switch>
+			<case to="apt_start_decision">${fs:exists( concat(doneFlagOutput,
+				"/apexruby_b.done"))
+				== false}
+			</case>
+			<default to="ao_decision" />
+		</switch>
+	</decision>
+
+	<!-- start of abf workflow -->
+	<decision name="apt_start_decision">
+		<switch>
+			<case to="apt_backtrack_latest_adid2catlist_java">true</case>
+			<default to="apt_backtrack_latest_adid2catlist_java" />
+		</switch>
+	</decision>
+
+	<action name="apt_backtrack_latest_adid2catlist_java">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+			<main-class>com.yahoo.miners.btmp.dashboard.tools.GetLatestPath
+			</main-class>
+			<arg>${dbdumperBase}/AD2C_KW2C_SP2C/data</arg>
+			<arg>${runDate}</arg>
+			<arg>${maxBacktrackDays}</arg>
+			<capture-output />
+		</java>
+		<ok to="apt_backtrack_latest_apexid2yanid_java" />
+		<error to="kill" />
+	</action>
+
+	<action name="apt_backtrack_latest_apexid2yanid_java">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+			<main-class>com.yahoo.miners.btmp.dashboard.tools.GetLatestPath
+			</main-class>
+			<arg>${dbdumperBase}/APEXID2YANID/data</arg>
+			<arg>${runDate}</arg>
+			<arg>${maxBacktrackDays}</arg>
+			<capture-output />
+		</java>
+		<ok to="apt_feed_data_extractor_mapreduce" />
+		<error to="kill" />
+	</action>
+
+
+	<action name="apt_feed_data_extractor_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${aptOutput}/extracted_data" />
+			</prepare>
+
+			<configuration>
+				<!-- job related properties -->
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.dataextractors.FeedDataExtractorMapper
+					</value>
+				</property>
+				<property>
+					<name>mapred.partitioner.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.dataextractors.FeedDataExtractorPartitioner
+					</value>
+					<description>The full class name of the partitioner class.
+					</description>
+				</property>
+				<property>
+					<name>mapred.reducer.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.dataextractors.FeedDataExtractorReducer
+					</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${aptClicksInputWorking},${aptServesInputWorking}</value>
+				</property>
+				<property>
+					<name>mapred.input.format.class</name>
+					<value>org.apache.hadoop.mapred.SequenceFileInputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${aptOutput}/extracted_data</value>
+				</property>
+				<property>
+					<name>mapred.output.format.class</name>
+					<value>org.apache.hadoop.mapred.SequenceFileOutputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output key.</description>
+				</property>
+
+				<property>
+					<name>mapred.output.value.class</name>
+					<value>com.yahoo.yst.sds.ULT.ULTRecordJT</value>
+					<description>The full classname of the output value.</description>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>100</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.job.map.memory.mb</name>
+					<value>3072</value>
+				</property>
+				<property>
+					<name>mapred.job.reduce.memory.mb</name>
+					<value>3072</value>
+				</property>
+				<property>
+					<name>mapred.compress.map.output</name>
+					<value>true</value>
+					<description>Should the outputs of the maps be compressed before
+						being
+						sent across the network. Uses SequenceFile compression.
+					</description>
+				</property>
+				<property>
+					<name>mapred.map.output.compression.codec</name>
+					<value>org.apache.hadoop.io.compress.DefaultCodec</value>
+					<description>If the map outputs are compressed, how should they be
+						compressed?
+					</description>
+				</property>
+				<property>
+					<name>mapred.output.compress</name>
+					<value>true</value>
+					<description>Should the job outputs be compressed?
+					</description>
+				</property>
+
+				<property>
+					<name>mapred.output.compression.codec</name>
+					<value>org.apache.hadoop.io.compress.DefaultCodec</value>
+					<description>If the job outputs are compressed, how should they be
+						compressed?
+					</description>
+				</property>
+				<property>
+					<name>mapred.output.compression.type</name>
+					<value>BLOCK</value>
+					<description>If the job outputs are to compressed as SequenceFiles,
+						how should
+						they be compressed? Should be one of NONE, RECORD or
+						BLOCK.
+					</description>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+				<!-- java opts -->
+				<property>
+					<name>mapred.child.java.opts</name>
+					<value>-Xmx2048m</value>
+				</property>
+				<property>
+					<name>mapred.child.env</name>
+					<value>ROOT=${KEYDB_ROOT}</value>
+					<description>ysecure.so: ycrKeyDbInit</description>
+				</property>
+
+				<!-- params passed to job -->
+				<property>
+					<name>valid.input.datestamps</name>
+					<value>${runDate}</value>
+				</property>
+				<property>
+					<name>actblob.schema.file</name>
+					<value>blobSchema.xml</value>
+				</property>
+				<property>
+					<name>yaxhash.low.value</name>
+					<value>0</value>
+				</property>
+				<property>
+					<name>yaxhash.high.value</name>
+					<value>99</value>
+				</property>
+				<property>
+					<name>gtlocip.configfile</name>
+					<value>geoconfig.txt</value>
+				</property>
+                <property>
+                    <name>gtipv6locip.configfile</name>
+                    <value>geoipv6config.txt</value>
+                </property>
+				<property>
+					<name>adid2catlistmapping</name>
+					<value>adid2catlist.mapping.dict</value>
+				</property>
+				<property>
+					<name>apexid2yanidmapping</name>
+					<value>apexid2yanid.mapping.dict</value>
+				</property>
+			</configuration>
+			<file>./conf/geoconfig.txt#geoconfig.txt</file>
+            <file>./conf/geoipv6config.txt#geoipv6config.txt</file>
+			<file>./conf/datapack.mem#datapack.mem</file>
+            <file>./conf/ipv6datapack.mem#ipv6datapack.mem</file>
+			<file>./conf/acts_blobSchema.xml#blobSchema.xml</file>
+			<file>${wf:actionData('apt_backtrack_latest_adid2catlist_java')['BacktrackLatestPath']}/adid2catlist.txt#adid2catlist.mapping.dict
+			</file>
+			<file>${wf:actionData('apt_backtrack_latest_apexid2yanid_java')['BacktrackLatestPath']}/apexid_yanid_mapping.txt#apexid2yanid.mapping.dict
+			</file>
+		</map-reduce>
+		<ok to="apt_stats_generator_mapreduce" />
+		<error to="kill" />
+	</action>
+
+	<action name="apt_stats_generator_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${aptOutput}/triplets" />
+			</prepare>
+
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.class</name>
+					<value>org.apache.hadoop.mapred.lib.aggregate.ValueAggregatorMapper
+					</value>
+				</property>
+				<property>
+					<name>mapred.combiner.class</name>
+					<value>com.yahoo.miners.btmp.common.stats.mapred.StatsBaseCombiner
+					</value>
+					<description>The full class name of the combiner.</description>
+				</property>
+				<property>
+					<name>mapred.partitioner.class</name>
+					<value>com.yahoo.miners.btmp.common.utils.HashDistributorPartitioner
+					</value>
+					<description>The full class name of the partitioner class.
+					</description>
+				</property>
+				<property>
+					<name>mapred.reducer.class</name>
+					<value>com.yahoo.miners.btmp.common.stats.mapred.StatsBaseReducer
+					</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${aptOutput}/extracted_data</value>
+				</property>
+				<property>
+					<name>mapred.input.format.class</name>
+					<value>org.apache.hadoop.mapred.SequenceFileInputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${aptOutput}/triplets</value>
+				</property>
+				<property>
+					<name>mapred.output.format.class</name>
+					<value>org.apache.hadoop.mapred.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output key.</description>
+				</property>
+				<property>
+					<name>mapred.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output value.</description>
+				</property>
+				<property>
+					<name>mapred.child.java.opts</name>
+					<value>-Xmx1664m</value>
+				</property>
+				<property>
+					<name>io.sort.mb</name>
+					<value>800</value>
+				</property>
+				<property>
+					<name>io.sort.factor</name>
+					<value>100</value>
+				</property>
+				<property>
+					<name>io.file.buffer.size</name>
+					<value>131072</value>
+				</property>
+				<property>
+					<name>io.sort.record.percent</name>
+					<value>0.2</value>
+				</property>
+				<property>
+					<name>aggregator.descriptor.num</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>aggregator.descriptor.0</name>
+					<value>UserDefined,com.yahoo.miners.btmp.dashboard.dataextractors.TripletDescriptor
+					</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>10</value>
+				</property>
+				<property>
+					<name>mapred.job.map.memory.mb</name>
+					<value>2048</value>
+				</property>
+				<property>
+					<name>mapred.job.reduce.memory.mb</name>
+					<value>2048</value>
+				</property>
+				<property>
+					<name>mapred.tasktracker.expiry.interval</name>
+					<value>3600000</value>
+				</property>
+				<property>
+					<name>mapred.task.timeout</name>
+					<value>3600000</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="apt_robot_cookie_generator_mapreduce" />
+		<error to="kill" />
+	</action>
+
+	<action name="apt_robot_cookie_generator_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${aptOutput}/robot_cookies" />
+			</prepare>
+
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.triplet.RobotCookieGenerator$RobotCookieGeneratorMapper
+					</value>
+				</property>
+				<property>
+					<name>mapred.reducer.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.triplet.RobotCookieGenerator$RobotCookieGeneratorReducer
+					</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${aptOutput}/extracted_data</value>
+				</property>
+				<property>
+					<name>mapred.input.format.class</name>
+					<value>org.apache.hadoop.mapred.SequenceFileInputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${aptOutput}/robot_cookies</value>
+				</property>
+				<property>
+					<name>mapred.output.format.class</name>
+					<value>org.apache.hadoop.mapred.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output key.</description>
+				</property>
+				<property>
+					<name>mapred.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output value.</description>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+				<!-- params passed to job -->
+				<property>
+					<name>valid.fileds.names</name>
+					<value>tt,cq</value>
+					<description>comma separated</description>
+				</property>
+				<property>
+					<name>valid.fields.values</name>
+					<value>662::663::824::929,b::bl::l::s::e</value>
+					<description>comma separated</description>
+				</property>
+				<property>
+					<name>valid.fields.values.value_separator</name>
+					<value></value>
+					<description>the separator of the value, default is "::"
+					</description>
+				</property>
+				<property>
+					<name>ad.position.blacklist</name>
+					<value>HEAD,ROOT,SIP</value>
+					<description>comma separated</description>
+				</property>
+				<!-- the following are used to decide the bad triplets -->
+				<property>
+					<name>robot.cookie.ad.click_number</name>
+					<value>30</value>
+				</property>
+				<property>
+					<name>robot.cookie.ad.view_number</name>
+					<value>300</value>
+				</property>
+				<!-- the following two are used together -->
+				<property>
+					<name>robot.cookie.ad.click_number2</name>
+					<value>15</value>
+				</property>
+				<property>
+					<name>robot.cookie.ad.ctr</name>
+					<value>0.5</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="apt_robot_cookie_generator_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="apt_robot_cookie_generator_fs">
+		<fs>
+			<move source="${aptOutput}/robot_cookies/part-00000" target="${aptOutput}/robot_cookies/robot_cookies.txt" />
+			<chmod path="${aptOutput}/robot_cookies/" permissions="755"
+				dir-files="true" />
+		</fs>
+		<ok to="apt_bad_triplet_generator_mapreduce" />
+		<error to="kill" />
+	</action>
+
+	<action name="apt_bad_triplet_generator_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${aptOutput}/badtriplets" />
+			</prepare>
+			<streaming>
+				<mapper>/bin/cat</mapper>
+				<reducer>perl create_badtriplet_list_mr.pl</reducer>
+			</streaming>
+
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${aptOutput}/triplets,${aptAbfOutput}/stats</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${aptOutput}/badtriplets</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+			<file>./libexec/create_badtriplet_list_mr.pl#create_badtriplet_list_mr.pl
+			</file>
+		</map-reduce>
+		<ok to="apt_bad_triplet_generator_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="apt_bad_triplet_generator_fs">
+		<fs>
+			<move source="${aptOutput}/badtriplets/part-00000" target="${aptOutput}/badtriplets/badtriplets.txt" />
+			<chmod path="${aptOutput}/badtriplets/" permissions="755"
+				dir-files="true" />
+		</fs>
+		<ok to="apt_score_number_generator_mapreduce" />
+		<error to="kill" />
+	</action>
+
+	<action name="apt_score_number_generator_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${aptOutput}/score_numbers" />
+			</prepare>
+
+			<configuration>
+				<!-- job related properties -->
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.class</name>
+					<value>com.yahoo.miners.btmp.dashboard.triplet.TripletScoreNumberMapper
+					</value>
+				</property>
+				<property>
+					<name>mapred.combiner.class</name>
+					<value>com.yahoo.miners.btmp.common.stats.mapred.StatsBaseCombiner
+					</value>
+					<description>The full class name of the combiner.</description>
+				</property>
+				<property>
+					<name>mapred.partitioner.class</name>
+					<value>com.yahoo.miners.btmp.common.utils.HashDistributorPartitioner
+					</value>
+					<description>The full class name of the partitioner class.
+					</description>
+				</property>
+				<property>
+					<name>mapred.reducer.class</name>
+					<value>com.yahoo.miners.btmp.common.stats.mapred.StatsBaseReducer
+					</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${aptOutput}/extracted_data</value>
+				</property>
+				<property>
+					<name>mapred.input.format.class</name>
+					<value>org.apache.hadoop.mapred.SequenceFileInputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${aptOutput}/score_numbers</value>
+				</property>
+				<property>
+					<name>mapred.output.format.class</name>
+					<value>org.apache.hadoop.mapred.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output key.</description>
+				</property>
+				<property>
+					<name>mapred.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output value.</description>
+				</property>
+				<property>
+					<name>mapred.child.java.opts</name>
+					<value>-Xmx1024m</value>
+				</property>
+				<property>
+					<name>io.sort.mb</name>
+					<value>128</value>
+				</property>
+				<property>
+					<name>io.sort.factor</name>
+					<value>40</value>
+				</property>
+				<property>
+					<name>io.file.buffer.size</name>
+					<value>131072</value>
+				</property>
+				<property>
+					<name>io.sort.record.percent</name>
+					<value>0.2</value>
+				</property>
+				<property>
+					<name>aggregator.descriptor.num</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>aggregator.descriptor.0</name>
+					<value>UserDefined,com.yahoo.miners.btmp.dashboard.triplet.TripletScoreNumberDescriptor
+					</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>10</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<!-- params passed to job -->
+				<property>
+					<name>badtriplets.dict</name>
+					<value>badtriplets.dict</value>
+				</property>
+				<property>
+					<name>b.cookie.robot.filter</name>
+					<value>true</value>
+					<description>default false</description>
+				</property>
+				<property>
+					<name>l.cookie.robot.filter</name>
+					<value>true</value>
+					<description>default false</description>
+				</property>
+				<property>
+					<name>robot.cookies.dict</name>
+					<value>robot.cookies.dict</value>
+				</property>
+				<property>
+					<name>spaceid.filter</name>
+					<value>false</value>
+					<description>default false</description>
+				</property>
+				<property>
+					<name>spaceid.blacklist.dict</name>
+					<value>spaceid.blacklist.dict</value>
+				</property>
+				<property>
+					<name>timestamp.filter</name>
+					<value>false</value>
+					<description>default false. if true, timestamp.intervals should not
+						be null
+					</description>
+				</property>
+				<property>
+					<name>timestamp.intervals</name>
+					<value></value>
+					<description>such as a-b,c-d</description>
+				</property>
+
+
+				<property>
+					<name>valid.fileds.names</name>
+					<value>sc,tt</value>
+					<description>comma separated</description>
+				</property>
+				<property>
+					<name>valid.fields.values</name>
+					<value>0,662::663::824::929</value>
+					<description>comma separated</description>
+				</property>
+				<property>
+					<name>valid.fields.values.value_separator</name>
+					<value></value>
+					<description>the separator of the value, default is "::"
+					</description>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+			<file>${aptOutput}/badtriplets/badtriplets.txt#badtriplets.dict
+			</file>
+			<file>${aptOutput}/robot_cookies/robot_cookies.txt#robot.cookies.dict
+			</file>
+			<file>./libexec/metro_spaceids.txt#spaceid.blacklist.dict</file>
+		</map-reduce>
+		<ok to="post_apt_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="post_apt_fs">
+		<fs>
+			<mkdir path="${doneFlagOutput}/apexruby_b.done" />
+			<chmod path="${doneFlagOutput}/apexruby_b.done" permissions="755"
+				dir-files="true" />
+			<chmod path="${aptOutput}" permissions="755" dir-files="true" />
+			<chmod path="${aptOutput}/extracted_data" permissions="755"
+				dir-files="true" />
+			<chmod path="${aptOutput}/triplets" permissions="755"
+				dir-files="true" />
+			<chmod path="${aptOutput}/robot_cookies" permissions="755"
+				dir-files="true" />
+			<chmod path="${aptOutput}/badtriplets" permissions="755"
+				dir-files="true" />
+			<chmod path="${aptOutput}/score_numbers" permissions="755"
+				dir-files="true" />
+		</fs>
+		<ok to="ao_decision" />
+		<error to="kill" />
+	</action>
+	<!-- end of apt workflow -->
+
+	<decision name="ao_decision">
+		<switch>
+			<case to="ao_start_decision">${fs:exists( concat(doneFlagOutput, "/aoruby_b.done"))
+				== false}
+			</case>
+			<default to="post_all_fs" />
+		</switch>
+	</decision>
+
+	<!-- start of ao workflow -->
+	<decision name="ao_start_decision">
+		<switch>
+			<case to="ao_triplet_convertor_mapreduce">true</case>
+			<default to="ao_triplet_convertor_mapreduce" />
+		</switch>
+	</decision>
+
+	<action name="ao_triplet_convertor_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${abfRubyOutput}/triplets" />
+			</prepare>
+			<streaming>
+				<mapper>grep '^ao\|^abf1'</mapper>
+				<reducer>perl tripletConverter_mr.pl</reducer>
+			</streaming>
+
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${abfOutput}/triplets</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${abfRubyOutput}/triplets</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+			<file>./libexec/tripletConverter_mr.pl#tripletConverter_mr.pl
+			</file>
+		</map-reduce>
+		<ok to="ao_triplet_convertor_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="ao_triplet_convertor_fs">
+		<fs>
+			<chmod path="${abfRubyOutput}/triplets/" permissions="755"
+				dir-files="true" />
+		</fs>
+		<ok to="ao_ruby_ready_decision" />
+		<error to="kill" />
+	</action>
+
+	<decision name="ao_ruby_ready_decision">
+		<switch>
+			<case to="ao_ruby_unzip_decision">${(fs:exists(concat(concat(dbdumperBase,
+				"/RUBY/data/"),
+				runDate)) == true) }
+			</case>
+			<default to="post_ao_fs" />
+		</switch>
+	</decision>
+
+	<decision name="ao_ruby_unzip_decision">
+		<switch>
+			<case to="ao_ruby_unzip_java">${(fs:exists(rubyUnzipOutput) ==
+				false) }
+			</case>
+			<default to="ao_backtrack_latest_adid2catlist_java" />
+		</switch>
+	</decision>
+
+	<action name="ao_ruby_unzip_java">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${rubyUnzipOutput}" />
+			</prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+			<main-class>com.yahoo.miners.btmp.dashboard.tools.CommandRunner
+			</main-class>
+			<arg>sh</arg>
+			<arg>-x</arg>
+			<arg>unzip_ruby_files.sh</arg>
+			<arg>${dbdumperBase}/RUBY/data/${runDate}</arg>
+			<arg>${rubyUnzipOutput}</arg>
+			<file>./libexec/unzip_ruby_files.sh#unzip_ruby_files.sh</file>
+			<capture-output />
+		</java>
+		<ok to="ao_ruby_unzip_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="ao_ruby_unzip_fs">
+		<fs>
+			<chmod path="${rubyUnzipOutput}" permissions="755" dir-files="true" />
+		</fs>
+		<ok to="ao_backtrack_latest_adid2catlist_java" />
+		<error to="kill" />
+	</action>
+
+	<action name="ao_backtrack_latest_adid2catlist_java">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+			<main-class>com.yahoo.miners.btmp.dashboard.tools.GetLatestPath
+			</main-class>
+			<arg>${dbdumperBase}/AD2C_KW2C_SP2C/data</arg>
+			<arg>${runDate}</arg>
+			<arg>${maxBacktrackDays}</arg>
+			<capture-output />
+		</java>
+		<ok to="ao_triplet_join_ruby_mapreduce" />
+		<error to="kill" />
+	</action>
+
+	<action name="ao_triplet_join_ruby_mapreduce">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${abfRubyOutput}/tripletrubyjoin_text" />
+			</prepare>
+			<configuration>
+				<!-- job related properties -->
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.class</name>
+					<value>com.yahoo.miners.btmp.tripletrubyjoin.JoinMapper
+					</value>
+				</property>
+				<property>
+					<name>mapred.reducer.class</name>
+					<value>com.yahoo.miners.btmp.tripletrubyjoin.JoinReducer
+					</value>
+				</property>
+
+				<property>
+					<name>mapred.input.dir</name>
+					<value>${abfRubyOutput}/triplets,${wf:actionData('ao_backtrack_latest_adid2catlist_java')['BacktrackLatestPath']}/adid2catlist.txt,${rubyUnzipOutput}/io_final,${rubyUnzipOutput}/company_final,${rubyUnzipOutput}/line_final,${rubyUnzipOutput}/ad_placement_final,${rubyUnzipOutput}/line_aoelid_pos_final,${rubyUnzipOutput}/dg_line_aoelid_pos_final,${rubyUnzipOutput}/ruby_eleid_lineid_pos_final,${rubyUnzipOutput}/profile_final,${rubyUnzipOutput}/bt_final,${rubyUnzipOutput}/ads_final
+					</value>
+				</property>
+				<property>
+					<name>mapred.input.format.class</name>
+					<value>org.apache.hadoop.mapred.TextInputFormat</value>
+				</property>
+				<property>
+					<name>mapred.output.dir</name>
+					<value>${abfRubyOutput}/tripletrubyjoin_text</value>
+				</property>
+				<property>
+					<name>mapred.output.format.class</name>
+					<value>com.yahoo.miners.btmp.tripletrubyjoin.MultipleTextOutputFormat
+					</value>
+				</property>
+				<property>
+					<name>mapred.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output key.</description>
+				</property>
+				<property>
+					<name>mapred.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+					<description>The full classname of the output value.</description>
+				</property>
+
+				<property>
+					<name>mapred.child.java.opts</name>
+					<value>-Xmx1840m</value>
+				</property>
+				<property>
+					<name>mapred.job.map.memory.mb</name>
+					<value>2048</value>
+				</property>
+				<property>
+					<name>mapred.job.reduce.memory.mb</name>
+					<value>4096</value>
+				</property>
+				<property>
+					<name>mapred.tasktracker.expiry.interval</name>
+					<value>3600000</value>
+				</property>
+				<property>
+					<name>mapred.task.timeout</name>
+					<value>3600000</value>
+				</property>
+
+				<property>
+					<name>mapred.reduce.tasks</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapred.map.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reduce.tasks.speculative.execution</name>
+					<value>true</value>
+				</property>
+				<!-- params passed to job -->
+				<property>
+					<name>aorubyjoin.ao.triplets</name>
+					<value>triplets.all.txt</value>
+				</property>
+				<property>
+					<name>aorubyjoin.ruby.adv_io_line_placement</name>
+					<value>adv_io_line_placement_final</value>
+				</property>
+				<property>
+					<name>aorubyjoin.ruby.lineid_adelemid_elemid</name>
+					<value>lineid_adelemid_elemid_final</value>
+				</property>
+				<property>
+					<name>aorubyjoin.ruby.property</name>
+					<value>property_final</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-view-job</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>mapreduce.job.acl-modify-job</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-modify-job</name>
+					<value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+					<name>oozie.launcher.mapreduce.job.acl-view-job</name>
+					<value>${oozieACLModifyJob}</value>
+				</property>
+			</configuration>
+			<file>${rubyUnzipOutput}/adv_io_line_placement_final#adv_io_line_placement_final
+			</file>
+			<file>${rubyUnzipOutput}/lineid_adelemid_elemid_final#lineid_adelemid_elemid_final
+			</file>
+			<file>${rubyUnzipOutput}/property_final#property_final</file>
+			<file>${abfRubyOutput}/triplets/part-00000#triplets.all.txt</file>
+		</map-reduce>
+		<ok to="ao_triplet_join_ruby_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="ao_triplet_join_ruby_fs">
+		<fs>
+			<chmod path="${abfRubyOutput}/tripletrubyjoin_text"
+				permissions="755" dir-files="true" />
+		</fs>
+		<ok to="post_ao_fs" />
+		<error to="kill" />
+	</action>
+
+	<action name="post_ao_fs">
+		<fs>
+			<mkdir path="${doneFlagOutput}/aoruby_b.done" />
+			<chmod path="${doneFlagOutput}/aoruby_b.done" permissions="755"
+				dir-files="true" />
+			<chmod path="${abfRubyOutput}" permissions="755" dir-files="true" />
+		</fs>
+		<ok to="post_all_fs" />
+		<error to="kill" />
+	</action>
+	<!-- end of ao workflow -->
+
+	<!-- end of the six workflows -->
+
+	<action name="post_all_fs">
+		<fs>
+			<delete path="${outputPath}/working/${runDate}" />
+			<mkdir path="${doneFlagOutput}/all_b.done" />
+			<chmod path="${doneFlagOutput}/all_b.done" permissions="755"
+				dir-files="true" />
+			<chmod path="${doneFlagOutput}" permissions="755" dir-files="true" />
+		</fs>
+		<ok to="end" />
+		<error to="kill" />
+	</action>
+
+
+	<kill name="kill">
+		<message>workflow failed, error
+			message[${wf:errorMessage(wf:lastErrorNode())}]
+		</message>
+	</kill>
+
+	<end name="end" />
+
+</workflow-app>
+

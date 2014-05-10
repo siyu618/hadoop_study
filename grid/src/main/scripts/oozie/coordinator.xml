@@ -1,0 +1,235 @@
+<coordinator-app xmlns="uri:oozie:coordinator:0.2" name="$(SERVICE_NAME)" frequency="${runFreq}" start="${startTime}" end="${endTime}" timezone="UTC">
+	<controls>
+		<timeout>${timeout}</timeout>
+		<concurrency>${concurrency}</concurrency>
+	</controls>
+
+	<datasets>
+
+		<!-- input feeds, no need to wait the abf ready. -->
+		<dataset name="APT_CLICKS_INPUT" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${apexClicks}/daily/data/${YEAR}${MONTH}${DAY}</uri-template>
+			<done-flag>_SUCCESS</done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+
+		<dataset name="APT_SERVES_INPUT" frequency="${coord:hours(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${apexServes}/hourly/data/${YEAR}${MONTH}${DAY}${HOUR}</uri-template>
+			<done-flag>_SUCCESS</done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+
+		<dataset name="ABF_INPUT" frequency="${coord:hours(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${abfFeed}/${YEAR}${MONTH}${DAY}${HOUR}00</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+
+		<!-- working directory for apt clicks & serves -->
+		<dataset name="APT_CLICKS_INPUT_WORKING" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${outputPath}/working/${YEAR}${MONTH}${DAY}/act_apex_targeted_clicks</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+		<dataset name="APT_SERVES_INPUT_WORKING" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${outputPath}/working/${YEAR}${MONTH}${DAY}/act_apex_targeted_serves</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+
+		<!-- output path -->
+		<dataset name="ABF_OUTPUT" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${outputPath}/abf1ruby_b/${YEAR}${MONTH}${DAY}</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+		<dataset name="ABF_RUBY_OUTPUT" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${outputPath}/aoruby_b/${YEAR}${MONTH}${DAY}</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+		<dataset name="APT_ABF_OUTPUT" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${outputPath}/apexaoruby_b/${YEAR}${MONTH}${DAY}</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+		<dataset name="APT_OUTPUT" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${outputPath}/apexruby_b/${YEAR}${MONTH}${DAY}</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+
+		<!-- ruby unzip output path -->
+		<dataset name="RUBY_UNZIP_OUTPUT" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${outputPath}/ruby_b/${YEAR}${MONTH}${DAY}/ruby_unzip</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+
+		<!-- done flags -->
+		<dataset name="DONE_FLAG_OUTPUT" frequency="${coord:days(1)}" initial-instance="${initialInstance}" timezone="UTC">
+			<uri-template>${outputPath}/done/${YEAR}${MONTH}${DAY}</uri-template>
+			<done-flag></done-flag> <!-- empty flag, looks for the directory itself -->
+		</dataset>
+	</datasets>
+
+	<input-events>
+		<data-in name="apt_clicks_input" dataset="APT_CLICKS_INPUT">
+			<instance>${coord:current(-1)}</instance>
+		</data-in>
+
+		<data-in name="apt_serves_input" dataset="APT_SERVES_INPUT">
+			<start-instance>${coord:current(-24)}</start-instance>
+			<end-instance>${coord:current(-1)}</end-instance>
+		</data-in>
+
+		<data-in name="abf_input" dataset="ABF_INPUT">
+			<start-instance>${coord:current(-24)}</start-instance>
+			<end-instance>${coord:current(-1)}</end-instance>
+		</data-in>
+
+	</input-events>
+
+	<output-events>
+		<data-out name="abf_output" dataset="ABF_OUTPUT">
+			<instance>${coord:current(-1)}</instance>
+		</data-out>
+
+		<data-out name="abf_ruby_output" dataset="ABF_RUBY_OUTPUT">
+			<instance>${coord:current(-1)}</instance>
+		</data-out>
+
+		<data-out name="apt_abf_output" dataset="APT_ABF_OUTPUT">
+			<instance>${coord:current(-1)}</instance>
+		</data-out>
+
+		<data-out name="apt_output" dataset="APT_OUTPUT">
+			<instance>${coord:current(-1)}</instance>
+		</data-out>
+
+		<data-out name="ruby_unzip_output" dataset="RUBY_UNZIP_OUTPUT">
+			<instance>${coord:current(-1)}</instance>
+		</data-out>
+
+		<data-out name="done_flag_output" dataset="DONE_FLAG_OUTPUT">
+			<instance>${coord:current(-1)}</instance>
+		</data-out>
+
+		<data-out name="apt_clicks_input_working" dataset="APT_CLICKS_INPUT_WORKING">
+			<instance>${coord:current(-1)}</instance>
+		</data-out>
+
+		<data-out name="apt_serves_input_working" dataset="APT_SERVES_INPUT_WORKING">
+			<instance>${coord:current(-1)}</instance>
+		</data-out>
+
+	</output-events>
+
+	<action>
+		<workflow>
+			<app-path>${workflowPath}</app-path>
+			<configuration>
+				<property>
+					<name>jobTracker</name>
+					<value>${jobTracker}</value>
+				</property>
+				<property>
+					<name>nameNode</name>
+					<value>${nameNode}</value>
+				</property>
+				<property>
+					<name>queueName</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>dbdumperBase</name>
+					<value>${dbdumperBase}</value>
+				</property>
+				<property>
+					<name>maxBacktrackDays</name>
+					<value>${maxBacktrackDays}</value>
+				</property>
+				<property>
+					<name>KEYDB_ROOT</name>
+					<value>${KEYDB_ROOT}</value>
+				</property>
+				<property>
+					<name>outputPath</name>
+					<value>${outputPath}</value>
+				</property>
+				<property>
+					<name>hadoopACLViewJob</name>
+					<value>${hadoopACLViewJob}</value>
+				</property>
+				<property>
+					<name>hadoopACLModifyJob</name>
+					<value>${hadoopACLModifyJob}</value>
+				</property>
+				<property>
+				    <name>oozieACLViewJob</name>
+				    <value>${oozieACLViewJob}</value>
+				</property>
+				<property>
+				    <name>oozieACLModifyJob</name>
+				    <value>${oozieACLModifyJob}</value>
+				</property>
+				<property>
+                    <name>runDate</name>
+                    <value>${coord:formatTime( coord:dateOffset(coord:nominalTime(), -1, 'DAY'), 'yyyyMMdd')}</value>
+                </property>
+
+				<!-- inputs -->
+				<property>
+					<name>aptClicksInput</name>
+					<value>${coord:dataIn('apt_clicks_input')}</value>
+				</property>
+				<property>
+					<name>aptServesInput</name>
+					<value>${coord:dataIn('apt_serves_input')}</value>
+				</property>
+
+				<!-- abf feed input -->
+				<property>
+					<name>abfFeed</name>
+					<value>${abfFeed}</value>
+				</property>
+
+				<!-- outputs -->
+				<property>
+					<name>abfOutput</name>
+					<value>${coord:dataOut('abf_output')}</value>
+				</property>
+				<property>
+					<name>abfRubyOutput</name>
+					<value>${coord:dataOut('abf_ruby_output')}</value>
+				</property>
+				<property>
+					<name>aptAbfOutput</name>
+					<value>${coord:dataOut('apt_abf_output')}</value>
+				</property>
+				<property>
+					<name>aptOutput</name>
+					<value>${coord:dataOut('apt_output')}</value>
+				</property>
+				<property>
+					<name>rubyUnzipOutput</name>
+					<value>${coord:dataOut('ruby_unzip_output')}</value>
+				</property>
+				<property>
+					<name>doneFlagOutput</name>
+					<value>${coord:dataOut('done_flag_output')}</value>
+				</property>
+
+				<!-- apt related -->
+				<property>
+					<name>aptClicksInputWorking</name>
+					<value>${coord:dataOut('apt_clicks_input_working')}</value>
+				</property>
+				<property>
+					<name>aptServesInputWorking</name>
+					<value>${coord:dataOut('apt_serves_input_working')}</value>
+				</property>
+				<property>
+					<name>aptClicksSchemaFilePattern</name>
+					<value>${aptClicksSchemaFilePattern}</value>
+				</property>
+				<property>
+					<name>aptServesSchemaFilePattern</name>
+					<value>${aptServesSchemaFilePattern}</value>
+				</property>
+
+			</configuration>
+		</workflow>
+	</action>
+
+</coordinator-app>

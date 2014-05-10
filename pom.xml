@@ -76,8 +76,22 @@
             </plugin>
         </plugins>
     </build>
-    <dependencies>
 
+    <dependencies>
+        <!-- hcat -->
+        <dependency>
+            <groupId>org.apache.hcatalog</groupId>
+            <artifactId>webhcat-java-client</artifactId>
+            <version>${apache.hcat.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hcatalog</groupId>
+            <artifactId>hcatalog-core</artifactId>
+            <version>${apache.hcat.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>
