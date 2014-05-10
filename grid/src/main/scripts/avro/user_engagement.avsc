@@ -1,0 +1,56 @@
+{
+  "namespace": "com.mycompany.hadoop_study.avro",
+  "type": "record",
+  "name": "UserEngagement",
+  "fields": [
+    {
+      "name": "SID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "BID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "DATE",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "NETWORK_IMPRESSIONS",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "NETWORK_ADCLICKS",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "MOBILE_NETWORK_IMPRESSIONS",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "MOBILE_NETWORK_ADCLICKS",
+      "type": [
+        "long",
+        "null"
+      ]
+    }
+  ]
+}

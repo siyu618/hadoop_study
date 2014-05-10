@@ -16,6 +16,8 @@
         <hadooo_study.core.version>${project.version}</hadooo_study.core.version>
         <apache.hadoop.version>2.0.0-cdh4.2.0 </apache.hadoop.version>
         <apache.pig.version>0.10.0-cdh4.2.0 </apache.pig.version>
+        <apache.piggybank.version>0.12.0</apache.piggybank.version>
+        <apache.hcat.version>0.4.0-cdh4.2.0</apache.hcat.version>
 
         <maven-surefire-plugin.version>2.14.1</maven-surefire-plugin.version>
         <mrunit.version>1.0.0</mrunit.version>
@@ -31,6 +33,8 @@
         <commons-httpclient.version>3.1</commons-httpclient.version>
         <commons-lang3.version>3.1</commons-lang3.version>
         <log4j.version>1.2.17</log4j.version>
+        <log4j2.version>2.0-alpha2</log4j2.version>
+        <gson.version>2.2.4</gson.version>
 
         <commons-lang.version>2.6</commons-lang.version>
         <commons-codec.version>1.4</commons-codec.version>
@@ -43,6 +47,9 @@
         <commons-configuration.version>1.10</commons-configuration.version>
         <jline.version>0.9.0</jline.version>
         <joda-time.version>2.3</joda-time.version>
+
+        <avro.version>1.7.6</avro.version>
+        <json-simple.version>1.1</json-simple.version>
     </properties>
 
     <repositories>
@@ -56,5 +63,21 @@
         <module>core</module>
         <module>grid</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+
+    </dependencies>
 
 </project>

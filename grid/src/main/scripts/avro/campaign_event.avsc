@@ -1,0 +1,153 @@
+{
+  "namespace": "com.mycompany.hadoop_study.avro",
+  "type": "record",
+  "name": "CampaignEvent",
+  "fields": [
+    {
+      "name": "SID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "BID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "IO",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "DATE",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "PROPERTY_BOOKING",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "SITE",
+      "type": [
+        "string",
+        "null"
+      ],
+      "doc": "In fact it is SITE NAME"
+    },
+    {
+      "name": "POSITION",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "LINE",
+      "type": [
+        "string",
+        "null"
+      ],
+      "doc": "It has another name ad_grp_placement_id"
+    },
+    {
+      "name": "DEVICE",
+      "type": [
+        "string",
+        "null"
+      ],
+      "doc": "In fact it is the device name."
+    },
+    {
+      "name": "OS",
+      "type": [
+        "string",
+        "null"
+      ],
+      "doc": "In fact it is the operating system name."
+    },
+    {
+      "name": "BROWSER",
+      "type": [
+        "string",
+        "null"
+      ],
+      "doc": "In fact it is the browser name."
+    },
+    {
+      "name": "CARRIER",
+      "type": [
+        "string",
+        "null"
+      ],
+      "doc": "In fact it is the carrier name."
+    },
+    {
+      "name": "CREATIVEID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "IMPRESSIONS",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "CLICKS",
+      "type": [
+        "long",
+        "null"
+      ]
+    },
+    {
+      "name": "SITEID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "DEVICEID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "OSID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "BROWSERID",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "CARRIERID",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  ]
+}

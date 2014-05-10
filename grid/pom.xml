@@ -55,10 +55,28 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+                <version>${avro.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>schema</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.basedir}/src/main/scripts/avro</sourceDirectory>
+                            <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <dependencies>
+        <!-- hadoop -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
@@ -85,6 +103,7 @@
             <version>${apache.hadoop.version}</version>
         </dependency>
 
+        <!-- pig -->
         <dependency>
             <groupId>org.apache.pig</groupId>
             <artifactId>pig</artifactId>
@@ -95,6 +114,28 @@
             <artifactId>pigunit</artifactId>
             <version>${apache.pig.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.pig</groupId>
+            <artifactId>piggybank</artifactId>
+            <version>${apache.piggybank.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- hcat -->
+        <dependency>
+            <groupId>org.apache.hcatalog</groupId>
+            <artifactId>webhcat-java-client</artifactId>
+            <version>${apache.hcat.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hcatalog</groupId>
+            <artifactId>hcatalog-core</artifactId>
+            <version>${apache.hcat.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -141,13 +182,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-            <version>${avro.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.mrunit</groupId>
             <artifactId>mrunit</artifactId>
             <version>${mrunit.version}</version>
@@ -155,12 +189,12 @@
             <scope>test</scope>
         </dependency>
 
-         <dependency>
-              <groupId>org.testng</groupId>
-              <artifactId>testng</artifactId>
-              <version>${testng.version}</version>
-              <scope>test</scope>
-          </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
@@ -195,7 +229,27 @@
             <version>${antlr-runtime.version}</version>
         </dependency>
 
+        <!-- avro -->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>${avro.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro-mapred</artifactId>
+            <version>${avro.version}</version>
+            <classifier>hadoop2</classifier>
+            <scope>provided</scope>
+        </dependency>
 
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>${json-simple.version}</version>
+            <scope>test</scope>
+        </dependency>
 
 
     </dependencies>
